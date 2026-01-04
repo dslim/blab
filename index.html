@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>볼링 점수 관리 - 모바일 UI</title>
+    <title>볼링팀점수 계산기 - 모바일 UI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
@@ -17,11 +17,10 @@
 <div id="app">
     <div class="max-w-md mx-auto min-h-screen flex flex-col">
         <header class="bg-blue-600 text-white p-4 shadow-md text-center">
-            <h1 class="text-xl font-bold">볼링점수관리</h1>
+            <h1 class="text-xl font-bold">볼링팀점수계산기</h1>
         </header>
 
-        <main class="flex-1 p-4 pb-24">
-            <div v-for="(player, index) in players" :key="index" 
+        <main class="flex-1 p-4 pb-32"> <div v-for="(player, index) in players" :key="index" 
                  class="bg-white rounded-xl shadow-sm mb-4 border border-gray-200 overflow-hidden">
                 
                 <div class="flex justify-between items-center bg-gray-50 px-4 py-2 border-b">
@@ -34,7 +33,7 @@
                                 :class="player.team === '피' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600'"
                                 class="px-3 py-1 rounded-full text-xs font-bold transition">피</button>
                         <button @click="player.team = '띠'" 
-                                :class="player.team === '띠' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600'"
+                                :class="player.team === '띠' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-600'"
                                 class="px-3 py-1 rounded-full text-xs font-bold transition">띠</button>
                     </div>
                 </div>
@@ -59,20 +58,34 @@
             </div>
         </main>
 
-        <footer class="sticky-footer bg-yellow-400 p-4 shadow-[0_-4px_10px_rgba(0,0,0,0.1)] flex justify-around items-center border-t-2 border-yellow-500">
-            <div class="text-center">
-                <p class="text-xs font-bold text-yellow-800">광팀</p>
-                <p class="text-3xl font-black text-gray-900">{{ totals.gwang }}</p>
+        <footer class="sticky-footer bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.15)] border-t border-gray-200">
+            <div class="p-3 bg-gray-50 text-[11px] border-b border-gray-100">
+                <div v-for="team in ['광', '피', '띠']" :key="team" class="mb-1 flex">
+                    <span class="font-bold w-10 shrink-0" :class="team === '광' ? 'text-orange-600' : 'text-orange-600'">{{ team }}팀:</span>
+                    <span class="text-gray-600 leading-tight">
+                        <template v-for="(p, idx) in getTeamPlayers(team)" :key="idx">
+                            {{ p.name }}({{ (p.handicap||0) + (p.score||0) + (p.allCover||0) }})<span v-if="idx < getTeamPlayers(team).length - 1">, </span>
+                        </template>
+                        <span v-if="getTeamPlayers(team).length === 0" class="text-gray-300 italic">선수 없음</span>
+                    </span>
+                </div>
             </div>
-            <div class="w-px h-10 bg-yellow-600 opacity-20"></div>
-            <div class="text-center">
-                <p class="text-xs font-bold text-yellow-800">피팀</p>
-                <p class="text-3xl font-black text-gray-900">{{ totals.pi }}</p>
-            </div>
-            <div class="w-px h-10 bg-yellow-600 opacity-20"></div>
-            <div class="text-center">
-                <p class="text-xs font-bold text-yellow-800">띠팀</p>
-                <p class="text-3xl font-black text-gray-900">{{ totals.tti }}</p>
+
+            <div class="bg-yellow-400 p-4 flex justify-around items-center">
+                <div class="text-center">
+                    <p class="text-xs font-bold text-orange-800">광팀</p>
+                    <p class="text-3xl font-black text-orange-900">{{ totals.gwang }}</p>
+                </div>
+                <div class="w-px h-10 bg-yellow-600"></div>
+                <div class="text-center">
+                    <p class="text-xs font-bold text-blue-500">피팀</p>
+                    <p class="text-3xl font-black text-blue-500">{{ totals.pi }}</p>
+                </div>
+                <div class="w-px h-10 bg-yellow-600"></div>
+                <div class="text-center">
+                    <p class="text-xs font-bold text-green-500">띠팀</p>
+                    <p class="text-3xl font-black text-green-500">{{ totals.tti }}</p>
+                </div>
             </div>
         </footer>
     </div>
@@ -83,34 +96,37 @@
 
     createApp({
         setup() {
-            // 이미지 데이터를 기반으로 한 초기 상태
             const players = ref([
-{name:'박성진2', handicap:0, score:120, allCover:0, team:'광'},
-{name:'김도현', handicap:0, score:120, allCover:0, team:'피'},
-{name:'김민희', handicap:12, score:120, allCover:0, team:'피'},
-{name:'도신미', handicap:12, score:120, allCover:10, team:'피'},
-{name:'석은자', handicap:12, score:1, allCover:0, team:'광'},
-{name:'송승현', handicap:0, score:0, allCover:0, team:'광'},
-{name:'이부휘', handicap:0, score:0, allCover:0, team:'피'},
-{name:'이정호', handicap:0, score:0, allCover:0, team:'피'},
-{name:'이태호', handicap:0, score:120, allCover:0, team:'피'},
-{name:'임덕수', handicap:0, score:120, allCover:0, team:'광'},
-{name:'임문균', handicap:0, score:0, allCover:0, team:'피'},
-{name:'조재원', handicap:0, score:120, allCover:0, team:'띠'},
-{name:'주승오', handicap:0, score:0, allCover:0, team:'피'},
-{name:'최향희', handicap:20, score:0, allCover:10, team:'피'},
-{name:'한경섭', handicap:0, score:0, allCover:0, team:'피'},
-{name:'홍문기', handicap:0, score:0, allCover:0, team:'피'}
+                {name:'김도현', handicap:0, score:0, allCover:0, team:'광'},
+                {name:'김민희', handicap:12, score:0, allCover:0, team:'광'},
+                {name:'도신미', handicap:12, score:0, allCover:0, team:'광'},
+                {name:'박성진1', handicap:0, score:0, allCover:0, team:'광'},
+                {name:'박성진2', handicap:0, score:0, allCover:0, team:'광'},
+                {name:'석은자', handicap:12, score:0, allCover:0, team:'광'},
+                {name:'송승현', handicap:0, score:0, allCover:0, team:'광'},
+                {name:'이부휘', handicap:0, score:0, allCover:0, team:'광'},
+                {name:'이정호', handicap:0, score:0, allCover:0, team:'광'},
+                {name:'이태호', handicap:0, score:0, allCover:0, team:'광'},
+                {name:'임덕수', handicap:0, score:0, allCover:0, team:'광'},
+                {name:'임문균', handicap:0, score:0, allCover:0, team:'광'},
+                {name:'조재원', handicap:0, score:0, allCover:0, team:'광'},
+                {name:'주승오', handicap:0, score:0, allCover:0, team:'광'},
+                {name:'최향희', handicap:20, score:0, allCover:0, team:'광'},
+                {name:'한경섭', handicap:0, score:0, allCover:0, team:'광'},
+                {name:'홍문기', handicap:0, score:0, allCover:0, team:'광'}
             ]);
 
-            // 실시간 수식 계산 (NVL 기능 포함)
+            // 팀별로 선수 필터링 함수
+            const getTeamPlayers = (teamName) => {
+                return players.value.filter(p => p.team === teamName);
+            };
+
             const totals = computed(() => {
                 let gwangSum = 0;
                 let piSum = 0;
                 let ttiSum = 0;
 
                 players.value.forEach(p => {
-                    // NVL(값, 0) 로직: 빈 값이나 오류 시 0으로 처리
                     const h = p.handicap || 0;
                     const s = p.score || 0;
                     const c = p.allCover || 0;
@@ -118,13 +134,13 @@
 
                     if (p.team === '광') gwangSum += rowTotal;
                     else if (p.team === '피') piSum += rowTotal;
-                    else if ( p.team === '띠') ttiSum += rowTotal;
+                    else if (p.team === '띠') ttiSum += rowTotal;
                 });
 
                 return { gwang: gwangSum, pi: piSum , tti: ttiSum};
             });
 
-            return { players, totals };
+            return { players, totals, getTeamPlayers };
         }
     }).mount('#app');
 </script>
